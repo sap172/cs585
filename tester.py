@@ -1,4 +1,4 @@
-import os, sys, subprocess, time, difflib
+import os, sys, subprocess, time
 from multiprocessing import Process
 
 PATH = 'C:\\Program Files\\Genymobile\\Genymotion\\'
@@ -49,11 +49,13 @@ def main(args):
             #remove apk
             removeAPK(PACKAGE, IP)
             
+            stopDevice(IP)
+            
         except subprocess.CalledProcessError as e:
             print "Unable to test on device " + DEVICE
         
     #stop emulators
-    stopDevices()
+    #stopDevice()
     time.sleep(DELAY)
     
     print "Finished testing all devices!"
@@ -109,11 +111,14 @@ def startDevice(deviceName):
     
     subprocess.Popen(CMD, shell=True)
     
-def stopDevice():
+def stopDevice(IP):
     #stop emulator
-    CMD = 'taskkill /IM player.exe'
-    
+    #CMD = 'taskkill /IM player.exe'
+    #PARAMS = ' '
+    #CMD = ADB_SCRIPT + IP + PARAMS
+    #command to use: tasklist /v /fi "imagename eq player.exe"
     subprocess.check_output(CMD)
+    
     
 def getGenyshellDevices():
     #return device list
@@ -139,8 +144,9 @@ def getMapOfIPs():
     for line in STR_LIST:
         SPLIT = line.split(DELIM)
         IP = SPLIT[1].strip() + ":5555"
-        DEVICE_NAME = SPLIT[2].strip()
-        DEVICE_MAP[IP] = DEVICE_NAME
+        if "0.0.0.0" not in IP:
+            DEVICE_NAME = SPLIT[2].strip()
+            DEVICE_MAP[IP] = DEVICE_NAME
     
     return DEVICE_MAP
     
