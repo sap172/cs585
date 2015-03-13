@@ -26,9 +26,7 @@ def main(args):
     
     IP_MAP = getMapOfIPs()
           
-    #for DEVICE in DEVICE_LIST:
-    for IP in IP_MAP:
-        print IP
+    for IP, DEVICE in IP_MAP.iteritems():
         try:
             APK_EXISTS = findAPK(PACKAGE, IP)
             if APK_EXISTS:
@@ -48,14 +46,12 @@ def main(args):
             
             #remove apk
             removeAPK(PACKAGE, IP)
-            
-            stopDevice(IP)
-            
+            stopDevice(DEVICE)
         except subprocess.CalledProcessError as e:
             print "Unable to test on device " + DEVICE
-        
+            
     #stop emulators
-    #stopDevice()
+    killAllDevices()
     time.sleep(DELAY)
     
     print "Finished testing all devices!"
@@ -111,14 +107,26 @@ def startDevice(deviceName):
     
     subprocess.Popen(CMD, shell=True)
     
-def stopDevice(IP):
+def stopDevice(DEVICE):
     #stop emulator
-    #CMD = 'taskkill /IM player.exe'
-    #PARAMS = ' '
-    #CMD = ADB_SCRIPT + IP + PARAMS
-    #command to use: tasklist /v /fi "imagename eq player.exe"
-    subprocess.check_output(CMD)
+    PROGRAM = 'player.exe'
+    CMD = 'tasklist /v /fi "imagename eq ' + PROGRAM + '"'
+    OUTPUT = subprocess.check_output(CMD)
     
+    STR_LIST = OUTPUT.split(PROGRAM)
+    
+    for LINE in STR_LIST:
+        if DEVICE[:-2] in LINE:
+            PID = LINE.strip().split(" ")[0]
+            
+            #kill process
+            CMD = 'taskkill /PID ' + PID
+            OUTPUT = subprocess.check_output(CMD)
+            
+def killAllDevices():
+    #kills all device processes
+    CMD = 'taskkill /IM player.exe'
+    OUTPUT = subprocess.check_output(CMD)
     
 def getGenyshellDevices():
     #return device list
@@ -136,7 +144,7 @@ def getMapOfIPs():
     DELIM = "virtual"
     
     STR_LIST = {}
-    STR_LIST = getGenyshellDevices().split(DELIM)[4:]
+    STR_LIST = getGenyshellDevices().split(DELIM)[3:]
     
     DELIM = "|"
     DEVICE_MAP = {}
@@ -146,7 +154,7 @@ def getMapOfIPs():
         IP = SPLIT[1].strip() + ":5555"
         if "0.0.0.0" not in IP:
             DEVICE_NAME = SPLIT[2].strip()
-            DEVICE_MAP[IP] = DEVICE_NAME
+            DEVICE_MAP[IP] = DEVICE_NAME[:-5]
     
     return DEVICE_MAP
     
