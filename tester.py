@@ -1,5 +1,5 @@
 import os, sys, subprocess, time
-from multiprocessing import Process
+from multiprocessing import Process, freeze_support
 
 PATH = 'C:\\Program Files\\Genymobile\\Genymotion\\'
 #APK = 'C:\\Users\\parkin\\AndroidstudioProjects\\SimpleCalculator\\app\\build\\outputs\\apk\\app-debug.apk'
@@ -27,28 +27,10 @@ def main(args):
     IP_MAP = getMapOfIPs()
           
     for IP, DEVICE in IP_MAP.iteritems():
-        try:
-            APK_EXISTS = findAPK(PACKAGE, IP)
-            if APK_EXISTS:
-                removeAPK(PACKAGE, IP)
-                
-            APK_EXISTS = findAPK(PACKAGE + '.test', IP)
-            if APK_EXISTS:
-                removeAPK(PACKAGE + '.test', IP)
-            
-            print "Installing APK..."
-            installAPK(APK, IP)
-            installAPK(TEST_APK, IP)
-            
-            #run unit test
-            #test package/runner
-            runTests(TEST_PACKAGE, TEST_RUNNER, DEVICE, IP)
-            
-            #remove apk
-            removeAPK(PACKAGE, IP)
-            stopDevice(DEVICE)
-        except subprocess.CalledProcessError as e:
-            print "Unable to test on device " + DEVICE
+        process = Process(target=splitProcesses, args=(IP,DEVICE))
+        process.start()
+        process.join()
+        
             
     #stop emulators
     killAllDevices()
@@ -56,6 +38,30 @@ def main(args):
     
     print "Finished testing all devices!"
         
+def splitProcesses(IP, DEVICE):
+    try:
+        APK_EXISTS = findAPK(PACKAGE, IP)
+        if APK_EXISTS:
+            removeAPK(PACKAGE, IP)
+            
+        APK_EXISTS = findAPK(PACKAGE + '.test', IP)
+        if APK_EXISTS:
+            removeAPK(PACKAGE + '.test', IP)
+        
+        print "Installing APK..."
+        installAPK(APK, IP)
+        installAPK(TEST_APK, IP)
+        
+        #run unit test
+        #test package/runner
+        runTests(TEST_PACKAGE, TEST_RUNNER, DEVICE, IP)
+        
+        #remove apk
+        removeAPK(PACKAGE, IP)
+        stopDevice(DEVICE)
+    except subprocess.CalledProcessError as e:
+        print "Unable to test on device " + DEVICE
+            
 def findAPK(package, IP):
     #SCRIPT = 'adb '
     PARAMS = ' shell pm path ' + package
@@ -179,5 +185,7 @@ def writeLog(OUTPUT, DEVICE):
     FILE = open(LOG_DIR + "/" + FILENAME, 'w')
     FILE.write(OUTPUT)
     FILE.close()
-    
-main(sys.argv)
+ 
+if __name__ == '__main__':
+    freeze_support() 
+    main(sys.argv)
