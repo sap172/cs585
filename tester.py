@@ -1,10 +1,9 @@
-import os, sys, subprocess, time
+#importing libraries
+import os, sys, subprocess, time, getopt
 from multiprocessing import Process, freeze_support
 
 PATH = 'C:\\Program Files\\Genymobile\\Genymotion\\'
-#APK = 'C:\\Users\\parkin\\AndroidstudioProjects\\SimpleCalculator\\app\\build\\outputs\\apk\\app-debug.apk'
 APK = 'app-debug.apk'
-#TEST_APK = 'C:\\Users\\parkin\\AndroidstudioProjects\\SimpleCalculator\\app\\build\\outputs\\apk\\app-debug-test-unaligned.apk'
 TEST_APK = 'app-debug-test-unaligned.apk'
 PACKAGE = 'com.twooilyplumbers.simplecalculator'
 TEST_PACKAGE = 'com.twooilyplumbers.simplecalculator.test'
@@ -13,7 +12,7 @@ LOG_DIR = 'logs'
 ADB_SCRIPT = 'adb -s '
 DELAY = 60
 
-def main(args):
+def main():
     
     print APK
     
@@ -185,7 +184,30 @@ def writeLog(OUTPUT, DEVICE):
     FILE = open(LOG_DIR + "/" + FILENAME, 'w')
     FILE.write(OUTPUT)
     FILE.close()
- 
+   
+def getHelpString():
+    #returns help string
+    return "This is the help string!"
+   
+def parseOptions(argv):
+    #parses the input arguments
+    try:
+        options, args = getopt.getopt(argv,"hv:",["APK=", "testAPK=", 
+        "delay=", "runner=", "log=", "path=", "package="])
+
+    except getopt.GetoptError as e:
+        print str(err)
+        print getHelpString()
+        sys.exit(2)
+        
+    #parse options
+    '''if not options:
+        #empty input
+        print getHelpString
+        sys.exit()
+    '''
+    
 if __name__ == '__main__':
+    parseOptions(sys.argv[1:])
     freeze_support() 
-    main(sys.argv)
+    main()
