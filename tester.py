@@ -11,6 +11,7 @@ TEST_RUNNER = 'android.test.InstrumentationTestRunner'
 LOG_DIR = 'logs'
 ADB_SCRIPT = 'adb -s '
 DELAY = 60
+VERBOSE = False
 
 def main():
     
@@ -206,6 +207,36 @@ def parseOptions(argv):
         print getHelpString
         sys.exit()
     '''
+    
+    for opt, arg in options:
+        if opt == "-h":
+            #print help string
+            print getHelpString()
+        if opt == "-v":
+            #set verbose
+            VERBOSE = True
+        if opt == "--delay":
+            #set delay
+            DELAY = arg
+        if opt == "--runner":
+            #set runner
+            RUNNER = arg
+        if opt == "--log":
+            #set log
+            LOG_DIR = arg
+        if opt == "--path":
+            #set path
+            PATH = arg
+        if opt == "--package":
+            #set package
+            PACKAGE = arg
+        if opt == "--APK":
+            #set apk
+            APK = arg
+        if opt == "--testAPK":
+            #set test apk
+            TEST_APK = arg
+        
     
 if __name__ == '__main__':
     parseOptions(sys.argv[1:])
