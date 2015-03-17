@@ -188,7 +188,15 @@ def writeLog(OUTPUT, DEVICE):
    
 def getHelpString():
     #returns help string
-    return "This is the help string!"
+    USAGE = ("tester.py <-h><-v>" +
+             "<--APK> file" +
+             "<--testAPK> file" +
+             "<--delay> seconds" +
+             "<--runner> runner" +
+             "<--log> log file" +
+             "<--path> path" +
+             "<--package> package")
+    return USAGE
    
 def parseOptions(argv):
     #parses the input arguments
