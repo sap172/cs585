@@ -185,6 +185,10 @@ def writeLog(OUTPUT, DEVICE):
     FILE = open(LOG_DIR + "/" + FILENAME, 'w')
     FILE.write(OUTPUT)
     FILE.close()
+    
+    #prints on shell if verbose is true
+    if VERBOSE = True:
+        print OUTPUT
    
 def getHelpString():
     #returns help string
