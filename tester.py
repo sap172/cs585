@@ -1,3 +1,5 @@
+#this script runs the app tests against all the running devices
+
 #importing libraries
 import os, sys, subprocess, time, getopt
 from multiprocessing import Process, freeze_support
@@ -10,19 +12,11 @@ TEST_PACKAGE = 'com.twooilyplumbers.simplecalculator.test'
 TEST_RUNNER = 'android.test.InstrumentationTestRunner'
 LOG_DIR = 'logs'
 ADB_SCRIPT = 'adb -s '
-DELAY = 60
 VERBOSE = False
 
 def main():
     
     print APK
-    
-    DEVICE_LIST = createDeviceList()
-    for DEVICE in DEVICE_LIST:
-        #start emulators
-        startDevice(DEVICE)
-    
-    time.sleep(DELAY)
     
     IP_MAP = getMapOfIPs()
           
@@ -30,12 +24,7 @@ def main():
         process = Process(target=splitProcesses, args=(IP,DEVICE))
         process.start()
         process.join()
-        
             
-    #stop emulators
-    killAllDevices()
-    time.sleep(DELAY)
-    
     print "Finished testing all devices!"
         
 def splitProcesses(IP, DEVICE):
@@ -58,12 +47,12 @@ def splitProcesses(IP, DEVICE):
         
         #remove apk
         removeAPK(PACKAGE, IP)
-        stopDevice(DEVICE)
+        
     except subprocess.CalledProcessError as e:
         print "Unable to test on device " + DEVICE
             
 def findAPK(package, IP):
-    #SCRIPT = 'adb '
+    #find the apk on the device
     PARAMS = ' shell pm path ' + package
     
     CMD = ADB_SCRIPT + IP + PARAMS
@@ -77,7 +66,6 @@ def findAPK(package, IP):
     
 def installAPK(apkName, IP):
     #install apk on emulator
-    #SCRIPT = 'adb '
     PARAMS = ' install "' + apkName + '"'
     CMD = ADB_SCRIPT + IP + PARAMS
     
@@ -87,7 +75,6 @@ def installAPK(apkName, IP):
     
 def removeAPK(package, IP):
     #remove apk on emulator
-    #SCRIPT = 'adb '
     PARAMS = ' uninstall "' + package + '"'
     
     CMD = ADB_SCRIPT + IP + PARAMS
@@ -96,43 +83,12 @@ def removeAPK(package, IP):
     
 def runTests(PACKAGE, RUNNER, DEVICE, IP):
     #start the tests
-    #SCRIPT = 'adb '
     PARAMS = ' shell am instrument -w ' + PACKAGE + '/' + RUNNER
     CMD = ADB_SCRIPT + IP + PARAMS
         
     OUTPUT = subprocess.check_output(CMD)
     
     writeLog(OUTPUT, DEVICE)
-    
-def startDevice(deviceName):
-    print "Starting device: " + deviceName
-    #start emulator
-    SCRIPT = '"' + PATH + 'player" '
-    PARAMS = '--vm-name "' + deviceName + '"'
-    CMD = SCRIPT + PARAMS
-    
-    subprocess.Popen(CMD, shell=True)
-    
-def stopDevice(DEVICE):
-    #stop emulator
-    PROGRAM = 'player.exe'
-    CMD = 'tasklist /v /fi "imagename eq ' + PROGRAM + '"'
-    OUTPUT = subprocess.check_output(CMD)
-    
-    STR_LIST = OUTPUT.split(PROGRAM)
-    
-    for LINE in STR_LIST:
-        if DEVICE[:-2] in LINE:
-            PID = LINE.strip().split(" ")[0]
-            
-            #kill process
-            CMD = 'taskkill /PID ' + PID
-            OUTPUT = subprocess.check_output(CMD)
-            
-def killAllDevices():
-    #kills all device processes
-    CMD = 'taskkill /IM player.exe'
-    OUTPUT = subprocess.check_output(CMD)
     
 def getGenyshellDevices():
     #return device list
@@ -163,19 +119,6 @@ def getMapOfIPs():
             DEVICE_MAP[IP] = DEVICE_NAME[:-5]
     
     return DEVICE_MAP
-    
-def createDeviceList():
-    #parse device list
-    DELIM = "0.0.0.0"
-    
-    STR_LIST = {}
-    STR_LIST = getGenyshellDevices().split(DELIM)[1:]
-  
-    DELIM = "|"
-    DEVICE_LIST = []
-    for line in STR_LIST:
-        DEVICE_LIST.append(line.split(DELIM)[1][1:-6])
-    return DEVICE_LIST
     
 def writeLog(OUTPUT, DEVICE):
     if not os.path.exists(LOG_DIR):
