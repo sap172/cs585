@@ -156,6 +156,7 @@ def parseOptions(argv):
         print getHelpString()
         sys.exit(2)
         
+    #simple edit!
     #parse options
     '''if not options:
         #empty input
